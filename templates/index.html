@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Matching System</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 5px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #2c3e50;
+        }
+
+        input[type="text"], input[type="file"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ccd0d5;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: #2980b9;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #3498db;
+            transform: translateY(-2px);
+        }
+
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            border: 1px solid #e1e4e8;
+            text-align: left;
+        }
+
+        th {
+            background-color: #2980b9;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f0f8ff;
+        }
+
+        /* Card-style Job/Resume Section */
+        .job-section {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #e1e4e8;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .job-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        /* Match % Bar */
+        .match-bar {
+            height: 15px;
+            border-radius: 8px;
+            background-color: #dfe6e9;
+            position: relative;
+        }
+
+        .match-fill {
+            height: 100%;
+            border-radius: 8px;
+            background-color: #27ae60;
+            text-align: right;
+            padding-right: 5px;
+            color: white;
+            font-weight: bold;
+            line-height: 15px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Resume Matching System</h1>
+
+    <!-- Upload Resume -->
+    <h2>Upload Resume</h2>
+    <form id="resumeForm">
+        <input type="file" name="resume" required>
+        <button type="submit">Upload Resume</button>
+    </form>
+    <div id="resumeMessage" class="success"></div>
+
+    <!-- Add Job -->
+    <h2>Add Job</h2>
+    <form id="jobForm">
+        <label for="title">Job Title</label>
+        <input type="text" name="title" placeholder="Job Title" required>
+
+        <label for="description">Job Description</label>
+        <textarea name="description" placeholder="Job Description" required></textarea>
+
+        <button type="submit">Add Job</button>
+    </form>
+    <div id="jobMessage" class="success"></div>
+
+    <!-- Match Resumes -->
+    <div class="job-section">
+        <h2>Match Resumes</h2>
+        <button id="matchBtn">Match Resumes</button>
+        <div id="matchResults"></div>
+    </div>
+</div>
+
+<script>
+document.getElementById('resumeForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const res = await fetch('/upload_resume', { method: 'POST', body: formData });
+    const msg = await res.text();
+    document.getElementById('resumeMessage').innerText = msg;
+    this.reset();
+});
+
+document.getElementById('jobForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const res = await fetch('/add_job', { method: 'POST', body: formData });
+    const msg = await res.text();
+    document.getElementById('jobMessage').innerText = msg;
+    this.reset();
+});
+
+document.getElementById('matchBtn').addEventListener('click', async function(){
+    const res = await fetch('/match_resumes');
+    const data = await res.json();
+    let html = '';
+    for(const [job, matches] of Object.entries(data)){
+        html += `<h3>${job}</h3>`;
+        if(matches.length > 0){
+            html += `<table><tr><th>Resume</th><th>Match %</th></tr>`;
+            matches.forEach(item => {
+                html += `<tr>
+                            <td>${item.resume}</td>
+                            <td>
+                                <div class="match-bar">
+                                    <div class="match-fill" style="width:${item.score}%">${item.score}%</div>
+                                </div>
+                            </td>
+                         </tr>`;
+            });
+            html += `</table>`;
+        } else {
+            html += `<p>No matches found.</p>`;
+        }
+    }
+    document.getElementById('matchResults').innerHTML = html;
+});
+</script>
+
+</body>
+</html>
