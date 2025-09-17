@@ -27,7 +27,7 @@ A *web-based application* that matches candidate resumes with job descriptions u
 ## 🚀 Installation & Setup
 
 1. *Clone the repository:*  
-git clone https://github.com/your-username/resume-matching.git  
+git clone https://github.com/mosapraveen/Smart-Resume-Matcher 
 cd resume-matching
 
 2. *Create a virtual environment:*  
